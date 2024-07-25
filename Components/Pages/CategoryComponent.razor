@@ -1,0 +1,51 @@
+@page "/menus/{menuId}/categories"
+@using HappyNoodles_ManagementWebApp.Models
+@inject HttpClient Http
+@code {
+    [Parameter] public static int MenuId { get; set; }
+    private List<Category> Categories = new List<Category>();
+    private Category newCategory = new Category { MenuId = MenuId };
+    private bool isEditing = false;
+    private Category editingCategory;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = await Http.GetFromJsonAsync<List<Category>>($"api/menus/{MenuId}/categories");
+    }
+
+    private async Task AddCategory()
+    {
+        var response = await Http.PostAsJsonAsync($"api/menus/{MenuId}/categories", newCategory);
+        if (response.IsSuccessStatusCode)
+        {
+            Categories = await Http.GetFromJsonAsync<List<Category>>($"api/menus/{MenuId}/categories");
+            newCategory = new Category { MenuId = MenuId };
+        }
+    }
+
+    private void EditCategory(Category category)
+    {
+        isEditing = true;
+        editingCategory = category;
+    }
+
+    private async Task UpdateCategory()
+    {
+        var response = await Http.PutAsJsonAsync($"api/menus/{MenuId}/categories/{editingCategory.Id}", editingCategory);
+        if (response.IsSuccessStatusCode)
+        {
+            Categories = await Http.GetFromJsonAsync<List<Category>>($"api/menus/{MenuId}/categories");
+            isEditing = false;
+            editingCategory = null;
+        }
+    }
+
+    private async Task DeleteCategory(int id)
+    {
+        var response = await Http.DeleteAsync($"api/menus/{MenuId}/categories/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            Categories = await Http.GetFromJsonAsync<List<Category>>($"api/menus/{MenuId}/categories");
+        }
+    }
+}
