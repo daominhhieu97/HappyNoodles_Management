@@ -31,8 +31,8 @@
                 <tr @key="menu.Id">
                     <td>@menu.Name</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="() => EditMenu(menu)">Edit</button>
-                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteMenu(menu.Id)">Delete</button>
+                        <button @onclick="() => EditMenu(menu)">Edit</button>
+                        <button @onclick="() => DeleteMenu(menu)">Delete</button>
 
 
 
@@ -73,13 +73,13 @@
         // Logic for editing a menu
     }
 
-    private async Task DeleteMenu(int id)
+    private void DeleteMenu(MenuViewModel vm)
     {
         Console.WriteLine("asdf");
-        var response = await Http.DeleteAsync($"api/menus/{id}");
-        if (response.IsSuccessStatusCode)
-        {
-            Menus = await Http.GetFromJsonAsync<List<MenuViewModel>>("api/menus");
-        }
+        // var response = await Http.DeleteAsync($"api/menus/{id}");
+        // if (response.IsSuccessStatusCode)
+        // {
+        //     Menus = await Http.GetFromJsonAsync<List<MenuViewModel>>("api/menus");
+        // }
     }
 }

@@ -1,0 +1,66 @@
+@page "/menus"
+@using HappyNoodles_ManagementApp.ViewModels
+@inject IHttpClientFactory HttpClientFactory
+
+<!-- Add Menu Form -->
+<EditForm Model="_newMenu" OnSubmit="AddMenu" FormName="AddMenuForm">
+    <div>
+        <label for="menuName">Menu Name:</label>
+        <InputText id="menuName" @bind-Value="_newMenu!.Name" class="form-control" />
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</EditForm>
+
+<div style="margin-top: 10px;">
+    <h4>Menus</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var menu in _menus)
+            {
+                <tr @key="menu.Id">
+                    <td>@menu.Name</td>
+                    <td>
+                        <button @onclick="() => DeleteMenu(menu)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private List<MenuViewModel> _menus = new List<MenuViewModel>();
+    private AddMenuViewModel _newMenu = new AddMenuViewModel();
+    private HttpClient _httpClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("ApiClient");
+        _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus") ?? new List<MenuViewModel>();
+    }
+
+    private async Task AddMenu()
+    {
+        if (_newMenu is null) return;
+
+        var response = await _httpClient.PostAsJsonAsync("api/menus", _newMenu);
+        if (response.IsSuccessStatusCode)
+        {
+            _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus");
+            _newMenu = new AddMenuViewModel(); // Reset the form
+        }
+    }
+
+    private void DeleteMenu(MenuViewModel vm)
+    {
+        
+    }
+}

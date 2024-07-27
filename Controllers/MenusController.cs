@@ -19,12 +19,20 @@ namespace HappyNoodles_ManagementWebApp.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MenuViewModel>>> GetMenus()
         {
-            var menus = await _menuService.GetMenus();
+            //var menus = await _menuService.GetMenus();
 
-            return Ok(menus.Select(x => new MenuViewModel(){
-                Id = x.Id,
-                Name = x.Name
-            }));
+            //return Ok(menus.Select(x => new MenuViewModel(){
+            //    Id = x.Id,
+            //    Name = x.Name
+            //}));
+            return new List<MenuViewModel>()
+            {
+                new MenuViewModel()
+                {
+                    Id = 1,
+                    Name = "Hieu"
+                }
+            };
         }
 
         // GET: api/menus/5
@@ -46,8 +54,9 @@ namespace HappyNoodles_ManagementWebApp.Controllers
         public async Task<ActionResult<Menu>> PostMenu(AddMenuViewModel menu)
         {
             //var createdMenu = await _menuService.AddMenu(menu);
-            await _menuService.AddMenu(new Menu(){
-                Name = menu.Name                
+            await _menuService.AddMenu(new Menu()
+            {
+                Name = menu.Name
             });
             //return CreatedAtAction(nameof(GetMenu), new { id = createdMenu.Id }, createdMenu);
             return Ok();
