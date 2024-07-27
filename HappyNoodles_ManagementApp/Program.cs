@@ -17,7 +17,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IFoodItemService, FoodItemService>();
 builder.Services.AddHttpClient("ApiClient", options =>
 {
-    options.BaseAddress = new Uri("http://localhost:5041/");
+    options.BaseAddress = new Uri("http://localhost:5288/");
 });
 builder.Services.AddControllers();
 
@@ -36,6 +36,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.MapControllers();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

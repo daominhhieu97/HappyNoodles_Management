@@ -1,5 +1,6 @@
 
 
+using HappyNoodles_ManagementApp.Models;
 using HappyNoodles_ManagementApp.Services;
 using HappyNoodles_ManagementApp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -44,18 +45,17 @@ namespace HappyNoodles_ManagementWebApp.Controllers
         //    return Ok(menu);
         //}
 
-        //// POST: api/menus
-        //[HttpPost]
-        //public async Task<ActionResult<Menu>> PostMenu(AddMenuViewModel menu)
-        //{
-        //    //var createdMenu = await _menuService.AddMenu(menu);
-        //    await _menuService.AddMenu(new Menu()
-        //    {
-        //        Name = menu.Name
-        //    });
-        //    //return CreatedAtAction(nameof(GetMenu), new { id = createdMenu.Id }, createdMenu);
-        //    return Ok();
-        //}
+        // POST: api/menus
+        [HttpPost]
+        public async Task<ActionResult> PostMenu(AddMenuViewModel menu)
+        {
+           await _menuService.AddMenu(new Menu()
+           {
+               Name = menu.Name
+           });
+           
+           return Ok();
+        }
 
         //// PUT: api/menus/5
         //[HttpPut("{id}")]
@@ -82,12 +82,12 @@ namespace HappyNoodles_ManagementWebApp.Controllers
         //    return NoContent();
         //}
 
-        //// DELETE: api/menus/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteMenu(int id)
-        //{
-        //    await _menuService.DeleteMenu(id);
-        //    return NoContent();
-        //}
+        // DELETE: api/menus/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMenu(int id)
+        {
+           await _menuService.DeleteMenu(id);
+           return NoContent();
+        }
     }
 }

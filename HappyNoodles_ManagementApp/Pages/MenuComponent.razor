@@ -46,7 +46,12 @@
         _httpClient = HttpClientFactory.CreateClient("ApiClient");
         _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus") ?? new List<MenuViewModel>();
     }
-
+    
+    private async Task ReloadMenu()
+    {
+        _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus") ?? new List<MenuViewModel>();
+    }
+    
     private async Task AddMenu()
     {
         if (_newMenu is null) return;
@@ -54,13 +59,19 @@
         var response = await _httpClient.PostAsJsonAsync("api/menus", _newMenu);
         if (response.IsSuccessStatusCode)
         {
-            _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus");
+            await ReloadMenu();
             _newMenu = new AddMenuViewModel(); // Reset the form
         }
     }
 
-    private void DeleteMenu(MenuViewModel vm)
+    private async Task DeleteMenu(MenuViewModel vm)
     {
-        
+        var response = await _httpClient.DeleteAsync($"api/menus/{vm.Id}");
+        if(response.IsSuccessStatusCode)
+        {
+            await ReloadMenu();
+        }
     }
+
+
 }
