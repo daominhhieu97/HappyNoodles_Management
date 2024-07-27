@@ -1,6 +1,4 @@
-
-
-
+using HappyNoodles_ManagementWebApp.Components.ViewModels;
 using HappyNoodles_ManagementWebApp.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,10 +17,14 @@ namespace HappyNoodles_ManagementWebApp.Controllers
 
         // GET: api/menus
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Menu>>> GetMenus()
+        public async Task<ActionResult<IEnumerable<MenuViewModel>>> GetMenus()
         {
             var menus = await _menuService.GetMenus();
-            return Ok(menus);
+
+            return Ok(menus.Select(x => new MenuViewModel(){
+                Id = x.Id,
+                Name = x.Name
+            }));
         }
 
         // GET: api/menus/5
@@ -41,10 +43,12 @@ namespace HappyNoodles_ManagementWebApp.Controllers
 
         // POST: api/menus
         [HttpPost]
-        public async Task<ActionResult<Menu>> PostMenu(Menu menu)
+        public async Task<ActionResult<Menu>> PostMenu(AddMenuViewModel menu)
         {
             //var createdMenu = await _menuService.AddMenu(menu);
-            await _menuService.AddMenu(menu);
+            await _menuService.AddMenu(new Menu(){
+                Name = menu.Name                
+            });
             //return CreatedAtAction(nameof(GetMenu), new { id = createdMenu.Id }, createdMenu);
             return Ok();
         }

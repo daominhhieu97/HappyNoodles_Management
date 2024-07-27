@@ -1,6 +1,7 @@
 using HappyNoodles_ManagementWebApp.Models;
 using HappyNoodles_ManagementWebApp.Data;
 using Microsoft.EntityFrameworkCore;
+using HappyNoodles_ManagementWebApp.Components.ViewModels;
 
 public interface IMenuService
 {
