@@ -1,4 +1,5 @@
 using HappyNoodles_ManagementApp.Models;
+using HappyNoodles_ManagementApp.ViewModels;
 using HappyNoodles_ManagementWebApp.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ namespace HappyNoodles_ManagementApp.Services
         Task<List<Menu>> GetMenus();
         Task<Menu> GetMenu(int id);
         Task AddMenu(Menu menu);
-        Task UpdateMenu(Menu menu);
+        Task UpdateMenu(MenuViewModel menu);
         Task DeleteMenu(int id);
     }
 
@@ -38,9 +39,15 @@ namespace HappyNoodles_ManagementApp.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateMenu(Menu menu)
+        public async Task UpdateMenu(MenuViewModel menu)
         {
-            _context.Entry(menu).State = EntityState.Modified;
+            var result = _context.Menus.FirstOrDefault(m => m.Id == menu.Id);
+            if (result == null)
+            {
+                return;
+            }
+
+            result.Name = menu.Name;
             await _context.SaveChangesAsync();
         }
 

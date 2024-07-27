@@ -2,20 +2,37 @@
 @using HappyNoodles_ManagementApp.ViewModels
 @inject IHttpClientFactory HttpClientFactory
 
+<h3 class="title">Menu Management</h3>
+
 <!-- Add Menu Form -->
-<EditForm Model="_newMenu" OnSubmit="AddMenu" FormName="AddMenuForm">
-    <div>
-        <label for="menuName">Menu Name:</label>
+<EditForm Model="_newMenu" OnSubmit="AddMenu" FormName="AddMenuForm" class="form">
+    <div class="form-group">
+        <label for="menuName" class="form-label">Menu Name:</label>
         <InputText id="menuName" @bind-Value="_newMenu!.Name" class="form-control" />
     </div>
-    <div>
+    <div class="form-group">
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>
 </EditForm>
 
-<div style="margin-top: 10px;">
-    <h4>Menus</h4>
-    <table class="table">
+<!-- Edit Menu Form -->
+@if (_isEditing)
+{
+    <EditForm Model="_editMenu" OnSubmit="EditMenu" FormName="EditMenuForm" class="form">
+        <div class="form-group">
+            <label for="editMenuName" class="form-label">Edit Menu Name:</label>
+            <InputText id="editMenuName" @bind-Value="_editMenu!.Name" class="form-control" />
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Update</button>
+            <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+        </div>
+    </EditForm>
+}
+
+<div class="menu-list">
+    <h4 class="subtitle">Menus</h4>
+    <table class="table table-striped table-hover">
         <thead>
             <tr>
                 <th>Name</th>
@@ -28,7 +45,8 @@
                 <tr @key="menu.Id">
                     <td>@menu.Name</td>
                     <td>
-                        <button @onclick="() => DeleteMenu(menu)">Delete</button>
+                        <button class="btn btn-warning btn-sm" @onclick="() => StartEditMenu(menu)">Edit</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteMenu(menu)">Delete</button>
                     </td>
                 </tr>
             }
@@ -39,7 +57,9 @@
 @code {
     private List<MenuViewModel> _menus = new List<MenuViewModel>();
     private AddMenuViewModel _newMenu = new AddMenuViewModel();
+    private MenuViewModel _editMenu = new MenuViewModel();
     private HttpClient _httpClient;
+    private bool _isEditing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -64,6 +84,32 @@
         }
     }
 
+    private async Task EditMenu()
+    {
+        var response = await _httpClient.PutAsJsonAsync($"api/menus/{_editMenu.Id}", _editMenu);
+        if (response.IsSuccessStatusCode)
+        {
+            await ReloadMenu();
+            _isEditing = false; // Exit edit mode
+        }
+    }
+
+    private void StartEditMenu(MenuViewModel menu)
+    {
+        _editMenu = new MenuViewModel
+        {
+            Id = menu.Id,
+            Name = menu.Name
+        };
+        _isEditing = true;
+    }
+
+    private void CancelEdit()
+    {
+        _isEditing = false;
+        _editMenu = new MenuViewModel();
+    }
+
     private async Task DeleteMenu(MenuViewModel vm)
     {
         var response = await _httpClient.DeleteAsync($"api/menus/{vm.Id}");
@@ -72,6 +118,4 @@
             await ReloadMenu();
         }
     }
-
-
 }

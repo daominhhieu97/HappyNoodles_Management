@@ -57,30 +57,30 @@ namespace HappyNoodles_ManagementWebApp.Controllers
            return Ok();
         }
 
-        //// PUT: api/menus/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutMenu(int id, Menu menu)
-        //{
-        //    if (id != menu.Id)
-        //    {
-        //        return BadRequest();
-        //    }
+        // PUT: api/menus/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutMenu(int id, MenuViewModel menu)
+        {
+           if (id != menu.Id)
+           {
+               return BadRequest();
+           }
 
-        //    try
-        //    {
-        //        await _menuService.UpdateMenu(menu);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        if (await _menuService.GetMenu(id) == null)
-        //        {
-        //            return NotFound();
-        //        }
-        //        throw;
-        //    }
+           try
+           {
+               await _menuService.UpdateMenu(menu);
+           }
+           catch (Exception)
+           {
+               if (await _menuService.GetMenu(id) == null)
+               {
+                   return NotFound();
+               }
+               throw;
+           }
 
-        //    return NoContent();
-        //}
+           return NoContent();
+        }
 
         // DELETE: api/menus/5
         [HttpDelete("{id}")]
