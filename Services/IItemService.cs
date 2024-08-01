@@ -2,7 +2,7 @@ using HappyNoodles_ManagementApp.Models;
 using HappyNoodles_ManagementWebApp.Data;
 using Microsoft.EntityFrameworkCore;
 
-public interface IFoodItemService
+public interface IItemService
 {
     Task<List<FoodItem>> GetFoodItems(int categoryId);
     Task<FoodItem> GetFoodItem(int id);
@@ -12,7 +12,7 @@ public interface IFoodItemService
 }
 
 
-public class FoodItemService : IFoodItemService
+public class FoodItemService : IItemService
 {
     private readonly ApplicationDbContext _context;
 
