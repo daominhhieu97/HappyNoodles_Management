@@ -12,9 +12,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<IMenuService, MenuService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
+//builder.Services.AddScoped<ICategoryService, CategoryService>();
 
-builder.Services.AddScoped<IItemService, FoodItemService>();
+//builder.Services.AddScoped<IItemService, FoodItemService>();
 builder.Services.AddHttpClient("ApiClient", options =>
 {
     options.BaseAddress = new Uri("http://localhost:5288/");

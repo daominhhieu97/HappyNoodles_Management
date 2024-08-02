@@ -59,7 +59,7 @@ namespace HappyNoodles_ManagementWebApp.Controllers
 
         // PUT: api/menus/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMenu(int id, MenuViewModel menu)
+        public async Task<IActionResult> PutMenu(Guid id, MenuViewModel menu)
         {
            if (id != menu.Id)
            {
@@ -82,9 +82,8 @@ namespace HappyNoodles_ManagementWebApp.Controllers
            return NoContent();
         }
 
-        // DELETE: api/menus/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMenu(int id)
+        public async Task<IActionResult> DeleteMenu(Guid id)
         {
            await _menuService.DeleteMenu(id);
            return NoContent();
