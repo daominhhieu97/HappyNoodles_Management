@@ -15,13 +15,34 @@ else if (!categories.Any())
 }
 else
 {
-    <ul>
-        @foreach (var category in categories)
-        {
-            <li>@category.Name (@category.Menu.Name)</li>
-        }
-    </ul>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Category Name</th>
+                <th>Menu</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var category in categories)
+            {
+                <tr>
+                    <td>@category.Id</td>
+                    <td>@category.Name</td>
+                    <td>@category.Menu.Name</td>
+                    <td>
+                        @* <button class="btn btn-primary" @onclick="() => EditCategory(category.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ConfirmDeleteCategory(category.Id)">Delete</button> *@
+                        <button class="btn btn-primary">Edit</button>
+                        <button class="btn btn-danger">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
+
 
 @code {
     private List<CategoryViewModel> categories;
