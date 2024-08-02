@@ -8,10 +8,10 @@ namespace HappyNoodles_ManagementApp.Services
     public interface IMenuService
     {
         Task<List<Menu>> GetMenus();
-        Task<Menu> GetMenu(int id);
+        Task<Menu> GetMenu(Guid id);
         Task AddMenu(Menu menu);
         Task UpdateMenu(MenuViewModel menu);
-        Task DeleteMenu(int id);
+        Task DeleteMenu(Guid id);
     }
 
     public class MenuService : IMenuService
@@ -28,7 +28,7 @@ namespace HappyNoodles_ManagementApp.Services
             return await _context.Menus.Include(m => m.Categories).ToListAsync();
         }
 
-        public async Task<Menu> GetMenu(int id)
+        public async Task<Menu> GetMenu(Guid id)
         {
             return await _context.Menus.Include(m => m.Categories).FirstOrDefaultAsync(m => m.Id == id);
         }
@@ -51,7 +51,7 @@ namespace HappyNoodles_ManagementApp.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteMenu(int id)
+        public async Task DeleteMenu(Guid id)
         {
             var menu = await _context.Menus.FindAsync(id);
             if (menu != null)
