@@ -2,7 +2,7 @@
 
 using HappyNoodles_ManagementApp.Models;
 using HappyNoodles_ManagementApp.Services;
-using HappyNoodles_ManagementApp.ViewModels;
+using HappyNoodles_ManagementApp.ViewModels.Menu;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyNoodles_ManagementWebApp.Controllers
