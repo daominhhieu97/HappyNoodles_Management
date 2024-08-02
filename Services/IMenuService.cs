@@ -1,5 +1,5 @@
 using HappyNoodles_ManagementApp.Models;
-using HappyNoodles_ManagementApp.ViewModels;
+using HappyNoodles_ManagementApp.ViewModels.Menu;
 using HappyNoodles_ManagementWebApp.Data;
 using Microsoft.EntityFrameworkCore;
 

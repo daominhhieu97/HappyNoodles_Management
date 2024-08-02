@@ -1,4 +1,4 @@
-namespace HappyNoodles_ManagementApp.ViewModels
+namespace HappyNoodles_ManagementApp.ViewModels.Menu
 {
     public class MenuViewModel
     {
