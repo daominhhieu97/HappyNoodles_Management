@@ -1,58 +1,53 @@
 @page "/menus"
 @using HappyNoodles_ManagementApp.ViewModels.Menu
 @inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
-<h3 class="title">Menu Management</h3>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-16">
+    <MudText Typo="Typo.h3" GutterBottom="true">Menu Management</MudText>
 
-<!-- Add Menu Form -->
-<EditForm Model="_newMenu" OnSubmit="AddMenu" FormName="AddMenuForm" class="form">
-    <div class="form-group">
-        <label for="menuName" class="form-label">Menu Name:</label>
-        <InputText id="menuName" @bind-Value="_newMenu!.Name" class="form-control" />
-    </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </div>
-</EditForm>
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4">
+                <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+                    <MudTextField T="string" Label="Menu Name" Required="true" RequiredError="Menu name is required!" @bind-Value="_newMenu.Name" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-3" OnClick="AddMenu">Add Menu</MudButton>
+                </MudForm>
+            </MudPaper>
+        </MudItem>
 
-<!-- Edit Menu Form -->
-@if (_isEditing)
-{
-    <EditForm Model="_editMenu" OnSubmit="EditMenu" FormName="EditMenuForm" class="form">
-        <div class="form-group">
-            <label for="editMenuName" class="form-label">Edit Menu Name:</label>
-            <InputText id="editMenuName" @bind-Value="_editMenu!.Name" class="form-control" />
-        </div>
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Update</button>
-            <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
-        </div>
-    </EditForm>
-}
+        @if (_isEditing)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="pa-4">
+                    <MudForm @ref="editForm" @bind-IsValid="@editSuccess" @bind-Errors="@editErrors">
+                        <MudTextField T="string" Label="Edit Menu Name" Required="true" RequiredError="Menu name is required!" @bind-Value="_editMenu.Name" />
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-3 mr-2" OnClick="EditMenu">Update</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="mt-3" OnClick="CancelEdit">Cancel</MudButton>
+                    </MudForm>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
 
-<div class="menu-list">
-    <h4 class="subtitle">Menus</h4>
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var menu in _menus)
-            {
-                <tr @key="menu.Id">
-                    <td>@menu.Name</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" @onclick="() => StartEditMenu(menu)">Edit</button>
-                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteMenu(menu)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+    <MudPaper Class="pa-4 mt-6">
+        <MudText Typo="Typo.h5" GutterBottom="true">Menus</MudText>
+        <MudTable Items="@_menus" Hover="true" Striped="true" Dense="true">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" OnClick="@(() => StartEditMenu(context))">Edit</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteMenu(context))">Delete</MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private List<MenuViewModel> _menus = new List<MenuViewModel>();
@@ -60,47 +55,69 @@
     private MenuViewModel _editMenu = new MenuViewModel();
     private HttpClient _httpClient;
     private bool _isEditing = false;
+    private bool success;
+    private bool editSuccess;
+    private string[] errors = { };
+    private string[] editErrors = { };
+    MudForm form;
+    MudForm editForm;
 
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("ApiClient");
-        _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus") ?? new List<MenuViewModel>();
+        await ReloadMenu();
     }
-    
+
     private async Task ReloadMenu()
     {
         _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus") ?? new List<MenuViewModel>();
     }
-    
+
     private async Task AddMenu()
     {
-        if (_newMenu is null) return;
-
-        var response = await _httpClient.PostAsJsonAsync("api/menus", _newMenu);
-        if (response.IsSuccessStatusCode)
+        await form.Validate();
+        if (form.IsValid)
         {
-            await ReloadMenu();
-            _newMenu = new AddMenuViewModel(); // Reset the form
+            var response = await _httpClient.PostAsJsonAsync("api/menus", _newMenu);
+            if (response.IsSuccessStatusCode)
+            {
+                await ReloadMenu();
+                _newMenu = new AddMenuViewModel();
+                Snackbar.Add("Menu added successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to add menu", Severity.Error);
+            }
         }
     }
 
     private async Task EditMenu()
     {
-        var response = await _httpClient.PutAsJsonAsync($"api/menus/{_editMenu.Id}", _editMenu);
-        if (response.IsSuccessStatusCode)
+        await editForm.Validate();
+        if (editForm.IsValid)
         {
-            await ReloadMenu();
-            _isEditing = false; // Exit edit mode
+            var response = await _httpClient.PutAsJsonAsync($"api/menus/{_editMenu.Id}", _editMenu);
+            if (response.IsSuccessStatusCode)
+            {
+                await ReloadMenu();
+                _isEditing = false;
+                Snackbar.Add("Menu updated successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to update menu", Severity.Error);
+            }
         }
     }
 
     private void StartEditMenu(MenuViewModel menu)
     {
         _editMenu = new MenuViewModel
-        {
-            Id = menu.Id,
-            Name = menu.Name
-        };
+            {
+                Id = menu.Id,
+                Name = menu.Name
+            };
         _isEditing = true;
     }
 
@@ -112,10 +129,24 @@
 
     private async Task DeleteMenu(MenuViewModel vm)
     {
-        var response = await _httpClient.DeleteAsync($"api/menus/{vm.Id}");
-        if(response.IsSuccessStatusCode)
+        bool? result = await DialogService.ShowMessageBox(
+            "Warning",
+            "Deleting can not be undone!",
+            yesText: "Delete!", cancelText: "Cancel"
+        );
+
+        if (result ?? false)
         {
-            await ReloadMenu();
+            var response = await _httpClient.DeleteAsync($"api/menus/{vm.Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await ReloadMenu();
+                Snackbar.Add("Menu deleted successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to delete menu", Severity.Error);
+            }
         }
     }
 }

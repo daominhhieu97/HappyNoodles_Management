@@ -6,27 +6,30 @@ namespace HappyNoodles_ManagementApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public partial class CategoriesController : ControllerBase
+    public class CategoriesController : ControllerBase
     {
-        public CategoriesController() { }
+        private readonly ICategoryService _categoryService;
+        public CategoriesController(ICategoryService categoryService)
+        {
+            _categoryService = categoryService;
+        }
 
         [HttpGet]
-        public List<CategoryViewModel> GetCategories()
+        public async Task<List<CategoryViewModel>> GetCategories()
         {
-            return new List<CategoryViewModel>()
-            {
-                new CategoryViewModel()
-                {
-                     Id = Guid.Empty,
-                Name = "",
-                Menu = new CategoryMenuViewModel()
-                {
-                    Id = Guid.Empty,
-                    Name = ""
-                }
-                }
+           var categories = await _categoryService.GetCategories();
+           var categoryViewModel = categories.Select(x => new CategoryViewModel
+           {
+               Id = x.Id,
+               Name = x.Name, 
+               Menu = new CategoryMenuViewModel
+               {
+                   Id = x.MenuId,
+                   Name = x.Menu.Name,
+               }
+           }).ToList();
 
-            };
+            return categoryViewModel;
         }
     }
 }

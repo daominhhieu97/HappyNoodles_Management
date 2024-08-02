@@ -3,54 +3,69 @@
 @using static HappyNoodles_ManagementApp.Controllers.CategoriesController
 @inject IHttpClientFactory HttpClientFactory
 
-<h3>Categories</h3>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-16">
+    <MudText Typo="Typo.h3" GutterBottom="true">Categories</MudText>
 
-@if (categories == null)
-{
-    <p><em>Loading...</em></p>
-}
-else if (!categories.Any())
-{
-    <p>No categories found.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Category Name</th>
-                <th>Menu</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var category in categories)
-            {
-                <tr>
-                    <td>@category.Id</td>
-                    <td>@category.Name</td>
-                    <td>@category.Menu.Name</td>
-                    <td>
-                        @* <button class="btn btn-primary" @onclick="() => EditCategory(category.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => ConfirmDeleteCategory(category.Id)">Delete</button> *@
-                        <button class="btn btn-primary">Edit</button>
-                        <button class="btn btn-danger">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
+    @if (categories == null)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (!categories.Any())
+    {
+        <MudAlert Severity="Severity.Info">No categories found.</MudAlert>
+    }
+    else
+    {
+        <MudPaper Elevation="3" Class="pa-4">
+            <MudTable Items="@categories" Dense="true" Hover="true" Bordered="true" Striped="true">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Categories</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>ID</MudTh>
+                    <MudTh>Category Name</MudTh>
+                    <MudTh>Menu</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="ID">@context.Id</MudTd>
+                    <MudTd DataLabel="Category Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Menu">@context.Menu.Name</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
 
 @code {
     private List<CategoryViewModel> categories;
     private HttpClient _httpClient;
+    private string searchString = "";
 
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("ApiClient");
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
         categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("api/categories");
+    }
+
+    private bool FilterFunc(CategoryViewModel category)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (category.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (category.Menu.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
     }
 }
