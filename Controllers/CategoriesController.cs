@@ -39,5 +39,13 @@ namespace HappyNoodles_ManagementApp.Controllers
 
             return Ok();
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCategory(Guid id)
+        {
+            await _categoryService.DeleteCategory(id);
+
+            return Ok();
+        }
     }
 }
