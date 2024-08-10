@@ -5,7 +5,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-16">
     <MudText Typo="Typo.h3" GutterBottom="true">Categories</MudText>
-    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@OpenAddCategoryModal">Add Category</MudButton>
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@OpenAddCategoryDialog">Add Category</MudButton>
 
     @if (categories == null)
     {
@@ -42,30 +42,23 @@
         </MudPaper>
     }
 
-    @if ((categories != null) && _isModalOpen)
-    {
-        <div class="modal-overlay">
-            <div class="modal">
-                <div class="modal-header">
-                    <MudText Typo="Typo.h6">Add New Category</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="@CloseModal" />
-                </div>
-                <div class="modal-body">
-                    <MudTextField @bind-Value="_newCategory.Name" Label="Category Name" Required="true" />
-                    <MudSelect T="Guid" Label="Select Menu" @bind-Value="_newCategory.Menu.Id">
-                        @foreach (var menu in _menus)
-                        {
-                            <MudSelectItem T="Guid" Value="@menu.Id">@menu.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                </div>
-                <div class="modal-footer">
-                    <MudButton OnClick="SubmitNewCategory" Color="Color.Primary">Submit</MudButton>
-                    <MudButton OnClick="CloseModal" Color="Color.Secondary">Cancel</MudButton>
-                </div>
-            </div>
-        </div>
-    }
+    <MudDialog @bind-Visible="_isAddCategoryDialogOpen" Class="mud-dialog-width-full">
+        <DialogContent>
+            <MudText Typo="Typo.h5">Add New Category</MudText>
+            <MudTextField Label="Category Name" @bind-Value="_newCategory.Name" Required="true" />
+            <MudSelect @bind-Value="_newCategory.Menu.Id" Label="Select Menu" Required="true">
+                @foreach (var menu in _menus)
+                {
+                    <MudSelectItem Value="@menu.Id">@menu.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="SubmitNewCategory">Save</MudButton>
+            <MudButton OnClick="CloseModal">Cancel</MudButton>
+        </DialogActions>
+    </MudDialog>
+
 </MudContainer>
 
 @code {
@@ -73,8 +66,13 @@
     private List<MenuViewModel> _menus;
     private CategoryViewModel _newCategory = new();
     private HttpClient _httpClient;
-    private bool _isModalOpen = false;
     private string searchString = "";
+    private bool _isAddCategoryDialogOpen = false;
+
+    private async Task OpenAddCategoryDialog()
+    {
+        _isAddCategoryDialogOpen = true;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,14 +91,9 @@
         _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus");
     }
 
-    private void OpenAddCategoryModal()
-    {
-        _isModalOpen = true;
-    }
-
     private void CloseModal()
     {
-        _isModalOpen = false;
+        _isAddCategoryDialogOpen = false;
         _newCategory = new CategoryViewModel(); // Reset form
     }
 
