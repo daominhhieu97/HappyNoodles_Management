@@ -1,10 +1,11 @@
 ﻿@page "/categories"
 @using HappyNoodles_ManagementApp.ViewModels.Category
-@using static HappyNoodles_ManagementApp.Controllers.CategoriesController
+@using HappyNoodles_ManagementApp.ViewModels.Menu
 @inject IHttpClientFactory HttpClientFactory
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-16">
     <MudText Typo="Typo.h3" GutterBottom="true">Categories</MudText>
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@OpenAddCategoryDialog">Add Category</MudButton>
 
     @if (categories == null)
     {
@@ -40,22 +41,67 @@
             </MudTable>
         </MudPaper>
     }
+
+    <MudDialog @bind-Visible="_isAddCategoryDialogOpen" Class="mud-dialog-width-full">
+        <DialogContent>
+            <MudText Typo="Typo.h5">Add New Category</MudText>
+            <MudTextField Label="Category Name" @bind-Value="_newCategory.Name" Required="true" />
+            <MudSelect @bind-Value="_newCategory.Menu.Id" Label="Select Menu" Required="true">
+                @foreach (var menu in _menus)
+                {
+                    <MudSelectItem Value="@menu.Id">@menu.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="SubmitNewCategory">Save</MudButton>
+            <MudButton OnClick="CloseModal">Cancel</MudButton>
+        </DialogActions>
+    </MudDialog>
+
 </MudContainer>
 
 @code {
     private List<CategoryViewModel> categories;
+    private List<MenuViewModel> _menus;
+    private CategoryViewModel _newCategory = new();
     private HttpClient _httpClient;
     private string searchString = "";
+    private bool _isAddCategoryDialogOpen = false;
+
+    private async Task OpenAddCategoryDialog()
+    {
+        _isAddCategoryDialogOpen = true;
+    }
 
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("ApiClient");
         await LoadCategories();
+        await LoadMenus();
     }
 
     private async Task LoadCategories()
     {
         categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("api/categories");
+    }
+
+    private async Task LoadMenus()
+    {
+        _menus = await _httpClient.GetFromJsonAsync<List<MenuViewModel>>("api/menus");
+    }
+
+    private void CloseModal()
+    {
+        _isAddCategoryDialogOpen = false;
+        _newCategory = new CategoryViewModel(); // Reset form
+    }
+
+    private async Task SubmitNewCategory()
+    {
+        await _httpClient.PostAsJsonAsync("api/categories", _newCategory);
+        await LoadCategories();
+        CloseModal();
     }
 
     private bool FilterFunc(CategoryViewModel category)

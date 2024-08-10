@@ -31,5 +31,13 @@ namespace HappyNoodles_ManagementApp.Controllers
 
             return categoryViewModel;
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddCategory(CategoryViewModel model)
+        {
+            await _categoryService.AddCategoryAsync(model);
+
+            return Ok();
+        }
     }
 }
