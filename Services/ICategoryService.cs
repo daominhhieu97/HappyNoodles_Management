@@ -10,7 +10,7 @@ public interface ICategoryService
     //Task<Category> GetCategory(int id);
     //Task AddCategory(Category category);
     //Task UpdateCategory(Category category);
-    //Task DeleteCategory(int id);
+    Task DeleteCategory(Guid id);
 }
 
 public class CategoryService : ICategoryService
@@ -58,13 +58,14 @@ public class CategoryService : ICategoryService
     //    await _context.SaveChangesAsync();
     //}
 
-    //public async Task DeleteCategory(int id)
-    //{
-    //    var category = await _context.Categories.FindAsync(id);
-    //    if (category != null)
-    //    {
-    //        _context.Categories.Remove(category);
-    //        await _context.SaveChangesAsync();
-    //    }
-    //}
+    public async Task DeleteCategory(Guid id)
+    {
+        var category = await _context.Categories.FindAsync(id);
+
+        if (category != null)
+        {
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+        }
+    }
 }

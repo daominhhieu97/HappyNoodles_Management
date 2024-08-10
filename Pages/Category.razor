@@ -2,21 +2,21 @@
 @using HappyNoodles_ManagementApp.ViewModels.Category
 @using HappyNoodles_ManagementApp.ViewModels.Menu
 @inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-16">
     <MudText Typo="Typo.h3" GutterBottom="true">Categories</MudText>
-    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@OpenAddCategoryDialog">Add Category</MudButton>
+    <MudSpacer />
 
     @if (categories == null)
     {
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
     }
-    else if (!categories.Any())
-    {
-        <MudAlert Severity="Severity.Info">No categories found.</MudAlert>
-    }
     else
     {
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@OpenAddCategoryDialog">Add Category</MudButton>
+        <MudSpacer />
+
         <MudPaper Elevation="3" Class="pa-4">
             <MudTable Items="@categories" Dense="true" Hover="true" Bordered="true" Striped="true">
                 <ToolBarContent>
@@ -29,11 +29,16 @@
                     <MudTh>ID</MudTh>
                     <MudTh>Category Name</MudTh>
                     <MudTh>Menu</MudTh>
+                    <MudTh>Action</MudTh>
+
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="ID">@context.Id</MudTd>
                     <MudTd DataLabel="Category Name">@context.Name</MudTd>
                     <MudTd DataLabel="Menu">@context.Menu.Name</MudTd>
+                    <MudTd DataLabel="Action">
+                        <MudButton Color="Color.Error" OnClick="@(() => DeleteCategory(context.Id ?? Guid.Empty))">Delete</MudButton>
+                    </MudTd> <!-- Delete Button -->
                 </RowTemplate>
                 <PagerContent>
                     <MudTablePager />
@@ -113,5 +118,12 @@
         if (category.Menu.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         return false;
+    }
+
+    private async Task DeleteCategory(Guid categoryId)
+    {
+        var response = await _httpClient.DeleteAsync($"api/categories/{categoryId}");
+        await LoadCategories();
+        Snackbar.Add("Category is deleted successfully", Severity.Success);
     }
 }
