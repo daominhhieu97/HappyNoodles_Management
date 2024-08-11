@@ -9,7 +9,7 @@ public interface ICategoryService
     Task AddCategoryAsync(CategoryViewModel model);
     //Task<Category> GetCategory(int id);
     //Task AddCategory(Category category);
-    //Task UpdateCategory(Category category);
+    Task UpdateCategoryAsync(CategoryViewModel model);
     Task DeleteCategory(Guid id);
 }
 
@@ -52,11 +52,17 @@ public class CategoryService : ICategoryService
     //    await _context.SaveChangesAsync();
     //}
 
-    //public async Task UpdateCategory(Category category)
-    //{
-    //    _context.Entry(category).State = EntityState.Modified;
-    //    await _context.SaveChangesAsync();
-    //}
+    public async Task UpdateCategoryAsync(CategoryViewModel model)
+    {
+        var category = await _context.Categories.FindAsync(model.Id);
+
+        if (category != null)
+        {
+            category.Name = model.Name;
+            category.MenuId = model.Menu.Id;
+            await _context.SaveChangesAsync();
+        }
+    }
 
     public async Task DeleteCategory(Guid id)
     {

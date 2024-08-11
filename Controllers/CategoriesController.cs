@@ -47,5 +47,16 @@ namespace HappyNoodles_ManagementApp.Controllers
 
             return Ok();
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCategory(Guid id, CategoryViewModel model)
+        {
+            if (id != model.Id)
+                return BadRequest("ID mismatch");
+
+            await _categoryService.UpdateCategoryAsync(model);
+
+            return Ok();
+        }
     }
 }
