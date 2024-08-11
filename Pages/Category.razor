@@ -18,7 +18,7 @@
         <MudSpacer />
 
         <MudPaper Elevation="3" Class="pa-4">
-            <MudTable Items="@categories" Dense="true" Hover="true" Bordered="true" Striped="true">
+            <MudTable Items="@categories" Dense="true" Hover="true" Bordered="true" Striped="true" Filter="FilterFunc">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Categories</MudText>
                     <MudSpacer />
@@ -38,6 +38,7 @@
                     <MudTd DataLabel="Menu">@context.Menu.Name</MudTd>
                     <MudTd DataLabel="Action">
                         <MudButton Color="Color.Error" OnClick="@(() => DeleteCategory(context.Id ?? Guid.Empty))">Delete</MudButton>
+                        <MudButton Color="Color.Primary" OnClick="@(() => OpenEditCategoryDialog(context))">Edit</MudButton>
                     </MudTd> <!-- Delete Button -->
                 </RowTemplate>
                 <PagerContent>
@@ -64,15 +65,34 @@
         </DialogActions>
     </MudDialog>
 
+    <MudDialog @bind-Visible="_isEditCategoryDialogOpen" Class="mud-dialog-width-full">
+        <DialogContent>
+            <MudText Typo="Typo.h5">Edit Category</MudText>
+            <MudTextField Label="Category Name" @bind-Value="_editCategory.Name" Required="true" />
+            <MudSelect @bind-Value="_editCategory.Menu.Id" Label="Select Menu" Required="true">
+                @foreach (var menu in _menus)
+                {
+                    <MudSelectItem Value="@menu.Id">@menu.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="SubmitEditCategory">Save</MudButton>
+            <MudButton OnClick="CloseEditModal">Cancel</MudButton>
+        </DialogActions>
+    </MudDialog>
+
 </MudContainer>
 
 @code {
     private List<CategoryViewModel> categories;
     private List<MenuViewModel> _menus;
     private CategoryViewModel _newCategory = new();
+    private CategoryViewModel _editCategory = new();
     private HttpClient _httpClient;
     private string searchString = "";
     private bool _isAddCategoryDialogOpen = false;
+    private bool _isEditCategoryDialogOpen = false;
 
     private async Task OpenAddCategoryDialog()
     {
@@ -125,5 +145,29 @@
         var response = await _httpClient.DeleteAsync($"api/categories/{categoryId}");
         await LoadCategories();
         Snackbar.Add("Category is deleted successfully", Severity.Success);
+    }
+
+    private async Task OpenEditCategoryDialog(CategoryViewModel category)
+    {
+        _editCategory = new CategoryViewModel
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Menu = new CategoryMenuViewModel { Id = category.Menu.Id, Name = category.Menu.Name }
+            };
+        _isEditCategoryDialogOpen = true;
+    }
+
+    private void CloseEditModal()
+    {
+        _isEditCategoryDialogOpen = false;
+    }
+
+    private async Task SubmitEditCategory()
+    {
+        await _httpClient.PutAsJsonAsync($"api/categories/{_editCategory.Id}", _editCategory);
+        await LoadCategories();
+        CloseEditModal();
+        Snackbar.Add("Category is updated successfully", Severity.Success);
     }
 }
