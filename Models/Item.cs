@@ -21,7 +21,7 @@ namespace HappyNoodles_ManagementApp.Models
             }
         }
         public int RemainingItem { get; set; }
-        public required Category Category { get; set; }
+        public Category Category { get; set; }
         public string? PictureUrl { get; set; }
     }
 }

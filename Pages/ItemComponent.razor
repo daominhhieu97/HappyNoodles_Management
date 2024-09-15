@@ -1,0 +1,277 @@
+﻿@page "/items"
+@using HappyNoodles_ManagementApp.Services
+@using HappyNoodles_ManagementApp.ViewModels.Category
+@using HappyNoodles_ManagementApp.ViewModels.Item
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-16">
+    <MudText Typo="Typo.h3" GutterBottom="true">Items</MudText>
+    <MudSpacer />
+
+    @if (items == null)
+
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+
+    else
+
+    {
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@OpenAddItemDialog">Add Item</MudButton>
+        <MudSpacer />
+
+        <MudPaper Elevation="3" Class="pa-4">
+            <MudTable Items="@items" Dense="true" Hover="true" Bordered="true" Striped="true" Filter="FilterFunc">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Items</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>ID</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh>Price</MudTh>
+                    <MudTh>Category</MudTh>
+                    <MudTh>Available Status</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="ID">@context.Id</MudTd>
+                    <MudTd DataLabel="Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Description">@context.Description</MudTd>
+                    <MudTd DataLabel="Price">@context.Price.ToString("C")</MudTd>
+                    <MudTd DataLabel="Category">@context.Category!.Name</MudTd>
+                    <MudTd DataLabel="Available Status">@EnumHelpers.GetEnumDescription(context.AvailableStatus)</MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudButton Color="Color.Error" OnClick="@(() => DeleteItem(context.Id!.Value))">Delete</MudButton>
+                        <MudButton Color="Color.Primary" OnClick="@(() => OpenEditItemDialog(context))">Edit</MudButton>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudPaper>
+    }
+
+    <MudDialog @bind-Visible="_isAddItemDialogOpen" Class="mud-dialog-width-full">
+        <DialogContent>
+            <MudText Typo="Typo.h5">Add New Item</MudText>
+            <MudTextField Label="Item Name" @bind-Value="_newItem.Name" Required="true" />
+            <MudTextField Label="Description" @bind-Value="_newItem.Description" />
+            <MudTextField Label="Price" @bind-Value="_newItem.Price" Required="true" />
+            <MudSelect @bind-Value="_newItem.Category!.Id" Label="Select Category" Required="true">
+                @foreach (var category in _categories)
+
+                {
+                    <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField Label="Remaining Item" @bind-Value="_newItem.RemainingItem" />
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="SubmitNewItem">Save</MudButton>
+            <MudButton OnClick="CloseAddItemDialog">Cancel</MudButton>
+        </DialogActions>
+    </MudDialog>
+
+    <MudDialog @bind-Visible="_isEditItemDialogOpen" Class="mud-dialog-width-full">
+        <DialogContent>
+            <MudText Typo="Typo.h5">Edit Item</MudText>
+            <MudTextField Label="Item Name" @bind-Value="_editItem.Name" Required="true" />
+            <MudTextField Label="Description" @bind-Value="_editItem.Description"/>
+            <MudTextField Label="Price" @bind-Value="_editItem.Price" Required="true" />
+            <MudSelect @bind-Value="_editItem.Category!.Id" Label="Select Category" Required="true">
+                @foreach (var category in _categories)
+
+                {
+                    <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField Label="Remaining Item" @bind-Value="_editItem.RemainingItem" />
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="SubmitEditItem">Save</MudButton>
+            <MudButton OnClick="CloseEditItemDialog">Cancel</MudButton>
+        </DialogActions>
+    </MudDialog>
+
+</MudContainer>
+
+@code {
+    private List<ItemViewModel> items = new List<ItemViewModel>();
+
+    private List<CategoryViewModel> _categories = new List<CategoryViewModel>();
+
+    private ItemViewModel _newItem = new();
+
+    private ItemViewModel _editItem = new();
+
+    private HttpClient _httpClient;
+
+    private string _searchString = "";
+
+    private bool _isAddItemDialogOpen = false;
+
+    private bool _isEditItemDialogOpen = false;
+
+
+
+    protected override async Task OnInitializedAsync()
+
+    {
+
+        _httpClient = HttpClientFactory.CreateClient("ApiClient");
+
+        await LoadItems();
+
+        await LoadCategories();
+
+    }
+
+
+
+    private async Task LoadItems()
+
+    {
+
+        items = await _httpClient.GetFromJsonAsync<List<ItemViewModel>>("api/items");
+
+    }
+
+
+
+    private async Task LoadCategories()
+
+    {
+
+        _categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("api/categories");
+
+    }
+
+
+
+    private bool FilterFunc(ItemViewModel item)
+
+    {
+
+        if (string.IsNullOrWhiteSpace(_searchString))
+
+            return true;
+
+        if (item.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+
+            return true;
+
+        return false;
+
+    }
+
+
+
+    private async Task OpenAddItemDialog()
+
+    {
+
+        _isAddItemDialogOpen = true;
+
+    }
+
+
+
+    private void CloseAddItemDialog()
+
+    {
+
+        _isAddItemDialogOpen = false;
+
+        _newItem = new ItemViewModel(); // Reset form
+
+    }
+
+
+
+    private async Task SubmitNewItem()
+
+    {
+
+        await _httpClient.PostAsJsonAsync("api/items", _newItem);
+
+        await LoadItems();
+
+        CloseAddItemDialog();
+
+        Snackbar.Add("Item added successfully", Severity.Success);
+
+    }
+
+
+
+    private async Task OpenEditItemDialog(ItemViewModel item)
+
+    {
+
+        _editItem = new ItemViewModel
+
+            {
+
+                Id = item.Id,
+
+                Name = item.Name,
+
+                Price = item.Price,
+
+                Category = new CategoryViewModel { Id = item.Category.Id, Name = item.Category.Name },
+
+                RemainingItem = item.RemainingItem,
+                Description = item.Description,
+
+            };
+
+        _isEditItemDialogOpen = true;
+
+    }
+
+
+
+    private void CloseEditItemDialog()
+
+    {
+
+        _isEditItemDialogOpen = false;
+
+    }
+
+
+
+    private async Task SubmitEditItem()
+
+    {
+
+        await _httpClient.PutAsJsonAsync($"api/items/{_editItem.Id}", _editItem);
+
+        await LoadItems();
+
+        CloseEditItemDialog();
+
+        Snackbar.Add("Item updated successfully", Severity.Success);
+
+    }
+
+
+
+    private async Task DeleteItem(Guid itemId)
+
+    {
+
+        var response = await _httpClient.DeleteAsync($"api/items/{itemId}");
+
+        await LoadItems();
+
+        Snackbar.Add("Item deleted successfully", Severity.Success);
+
+    }
+}
