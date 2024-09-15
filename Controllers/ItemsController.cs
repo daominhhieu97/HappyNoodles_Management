@@ -38,7 +38,7 @@ namespace HappyNoodles_ManagementApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddItem(ItemViewModel model)
+        public async Task<IActionResult> AddItem([FromForm] ItemViewModel model)
         {
             await _itemService.AddItemAsync(model);
             return Ok();

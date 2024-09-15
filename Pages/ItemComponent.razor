@@ -71,6 +71,11 @@
                 }
             </MudSelect>
             <MudTextField Label="Remaining Item" @bind-Value="_newItem.RemainingItem" />
+            <InputFile OnChange="HandleFileUpload" Accept="image/*" />
+            @if (!string.IsNullOrEmpty(_fileName))
+            {
+                <MudText Typo="Typo.subtitle1">Uploaded File: @_fileName</MudText>
+            }
         </DialogContent>
         <DialogActions>
             <MudButton OnClick="SubmitNewItem">Save</MudButton>
@@ -117,6 +122,8 @@
     private bool _isAddItemDialogOpen = false;
 
     private bool _isEditItemDialogOpen = false;
+    private IBrowserFile? _uploadedFile;
+    private string _fileName = "";
 
 
 
@@ -130,6 +137,22 @@
 
         await LoadCategories();
 
+    }
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        _uploadedFile = e.File;
+
+        // Ensure only image files
+        if (_uploadedFile != null && _uploadedFile.ContentType.StartsWith("image/"))
+        {
+            _fileName = _uploadedFile.Name;
+        }
+        else
+        {
+            Snackbar.Add("Please upload a valid image file.", Severity.Error);
+            _uploadedFile = null;
+        }
     }
 
 
@@ -197,15 +220,53 @@
     private async Task SubmitNewItem()
 
     {
+        
+        // await _httpClient.PostAsJsonAsync("api/items", _newItem);
 
-        await _httpClient.PostAsJsonAsync("api/items", _newItem);
+        // await LoadItems();
 
-        await LoadItems();
+        // CloseAddItemDialog();
 
-        CloseAddItemDialog();
+        // Snackbar.Add("Item added successfully", Severity.Success);
+        if (_uploadedFile != null)
+        {
+            var content = new MultipartFormDataContent();
 
-        Snackbar.Add("Item added successfully", Severity.Success);
+            // Add item details
+            content.Add(new StringContent(_newItem.Name), "Name");
+            content.Add(new StringContent(_newItem.Description ?? string.Empty), "Description");
+            content.Add(new StringContent(_newItem.Price.ToString()), "Price");
+            content.Add(new StringContent(_newItem.Category!.Id.ToString()), "CategoryId");
 
+            // Copy the file stream into a memory stream to avoid consuming it more than once
+            using (var memoryStream = new MemoryStream())
+            {
+                await _uploadedFile.OpenReadStream().CopyToAsync(memoryStream);
+                memoryStream.Position = 0; // Reset stream position
+
+                // Add the file stream to the form data
+                var fileStreamContent = new StreamContent(memoryStream);
+                content.Add(fileStreamContent, "file", _fileName);
+
+                // Post to API
+                var response = await _httpClient.PostAsync("api/items", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadItems();
+                    CloseAddItemDialog();
+                    Snackbar.Add("Item added successfully", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Failed to add item", Severity.Error);
+                }
+            }
+        }
+        else
+        {
+            Snackbar.Add("Please upload an image file", Severity.Warning);
+        }
     }
 
 
