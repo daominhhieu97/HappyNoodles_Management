@@ -1,4 +1,5 @@
 ﻿@page "/items"
+@using HappyNoodles_ManagementApp.Services
 @using HappyNoodles_ManagementApp.ViewModels.Category
 @using HappyNoodles_ManagementApp.ViewModels.Item
 @inject IHttpClientFactory HttpClientFactory
@@ -43,7 +44,7 @@
                     <MudTd DataLabel="Description">@context.Description</MudTd>
                     <MudTd DataLabel="Price">@context.Price.ToString("C")</MudTd>
                     <MudTd DataLabel="Category">@context.Category!.Name</MudTd>
-                    <MudTd DataLabel="Available Status">@context.AvailableStatus</MudTd>
+                    <MudTd DataLabel="Available Status">@EnumHelpers.GetEnumDescription(context.AvailableStatus)</MudTd>
                     <MudTd DataLabel="Actions">
                         <MudButton Color="Color.Error" OnClick="@(() => DeleteItem(context.Id!.Value))">Delete</MudButton>
                         <MudButton Color="Color.Primary" OnClick="@(() => OpenEditItemDialog(context))">Edit</MudButton>
