@@ -39,7 +39,8 @@ namespace HappyNoodles_ManagementApp.Services
                     Id = item.Category.Id,
                     Name = item.Category.Name
                 },
-                RemainingItem = item.RemainingItem
+                RemainingItem = item.RemainingItem,
+                Description = item.Description
             }).ToList();
         }
 
@@ -50,8 +51,9 @@ namespace HappyNoodles_ManagementApp.Services
                 Id = Guid.NewGuid(),
                 Name = model.Name,
                 Price = model.Price,
-                CategoryId = model.Category.Id!.Value,
-                RemainingItem = model.RemainingItem
+                CategoryId = model.Category!.Id!.Value,
+                RemainingItem = model.RemainingItem,
+                Description = model.Description
             };
 
             _context.Items.Add(newItem);
@@ -75,9 +77,9 @@ namespace HappyNoodles_ManagementApp.Services
             {
                 existingItem.Name = model.Name;
                 existingItem.Price = model.Price;
-                existingItem.CategoryId = model.Category.Id!.Value;
+                existingItem.CategoryId = model.Category!.Id!.Value;
                 existingItem.RemainingItem = model.RemainingItem;
-
+                existingItem.Description = model.Description;
                 await _context.SaveChangesAsync();
             }
         }

@@ -31,6 +31,7 @@
                 <HeaderContent>
                     <MudTh>ID</MudTh>
                     <MudTh>Name</MudTh>
+                    <MudTh>Description</MudTh>
                     <MudTh>Price</MudTh>
                     <MudTh>Category</MudTh>
                     <MudTh>Available Status</MudTh>
@@ -39,8 +40,9 @@
                 <RowTemplate>
                     <MudTd DataLabel="ID">@context.Id</MudTd>
                     <MudTd DataLabel="Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Description">@context.Description</MudTd>
                     <MudTd DataLabel="Price">@context.Price.ToString("C")</MudTd>
-                    <MudTd DataLabel="Category">@context.Category.Name</MudTd>
+                    <MudTd DataLabel="Category">@context.Category!.Name</MudTd>
                     <MudTd DataLabel="Available Status">@context.AvailableStatus</MudTd>
                     <MudTd DataLabel="Actions">
                         <MudButton Color="Color.Error" OnClick="@(() => DeleteItem(context.Id!.Value))">Delete</MudButton>
@@ -58,8 +60,9 @@
         <DialogContent>
             <MudText Typo="Typo.h5">Add New Item</MudText>
             <MudTextField Label="Item Name" @bind-Value="_newItem.Name" Required="true" />
+            <MudTextField Label="Description" @bind-Value="_newItem.Description" />
             <MudTextField Label="Price" @bind-Value="_newItem.Price" Required="true" />
-            <MudSelect @bind-Value="_newItem.Category.Id" Label="Select Category" Required="true">
+            <MudSelect @bind-Value="_newItem.Category!.Id" Label="Select Category" Required="true">
                 @foreach (var category in _categories)
 
                 {
@@ -78,8 +81,9 @@
         <DialogContent>
             <MudText Typo="Typo.h5">Edit Item</MudText>
             <MudTextField Label="Item Name" @bind-Value="_editItem.Name" Required="true" />
+            <MudTextField Label="Description" @bind-Value="_editItem.Description"/>
             <MudTextField Label="Price" @bind-Value="_editItem.Price" Required="true" />
-            <MudSelect @bind-Value="_editItem.Category.Id" Label="Select Category" Required="true">
+            <MudSelect @bind-Value="_editItem.Category!.Id" Label="Select Category" Required="true">
                 @foreach (var category in _categories)
 
                 {
@@ -221,7 +225,8 @@
 
                 Category = new CategoryViewModel { Id = item.Category.Id, Name = item.Category.Name },
 
-                RemainingItem = item.RemainingItem
+                RemainingItem = item.RemainingItem,
+                Description = item.Description,
 
             };
 

@@ -27,10 +27,11 @@ namespace HappyNoodles_ManagementApp.Controllers
                 Price = item.Price,
                 Category = new CategoryViewModel
                 {
-                    Id = item.CategoryId,
-                    Name = item.Category.Name
+                    Id = item.Category!.Id,
+                    Name = item.Category!.Name
                 },
-                RemainingItem = item.RemainingItem
+                RemainingItem = item.RemainingItem,
+                Description = item.Description,
             }).ToList();
 
             return itemViewModels;
