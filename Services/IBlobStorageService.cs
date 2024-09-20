@@ -5,7 +5,7 @@ namespace HappyNoodles_ManagementApp.Services
 {
     public interface IBlobStorageService
     {
-        Task<string> UploadFileAsync(Stream fileStream, string fileName);
+        Task<string> UploadFileAsync(byte[] fileBytes, string fileName);
     }
 
     public class BlobStorageService : IBlobStorageService
@@ -20,21 +20,21 @@ namespace HappyNoodles_ManagementApp.Services
             _blobServiceClient = new BlobServiceClient(connectionString);
         }
 
-        public async Task<string> UploadFileAsync(Stream fileStream, string fileName)
+        public async Task<string> UploadFileAsync(byte[] fileBytes, string fileName)
         {
-            // Get the blob container client
-            var blobContainerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            // Get a reference to the container
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
 
-            // Create the container if it doesn't exist
-            await blobContainerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+            // Get a reference to the blob (file)
+            var blobClient = containerClient.GetBlobClient(fileName);
 
-            // Get the blob client for the uploaded file
-            var blobClient = blobContainerClient.GetBlobClient(fileName);
+            // Upload the byte array as a stream
+            using (var memoryStream = new MemoryStream(fileBytes))
+            {
+                await blobClient.UploadAsync(memoryStream, overwrite: true);
+            }
 
-            // Upload the file
-            await blobClient.UploadAsync(fileStream, true);
-
-            // Return the URI to access the file
+            // Return the URL of the uploaded blob
             return blobClient.Uri.ToString();
         }
     }

@@ -71,7 +71,13 @@
                 }
             </MudSelect>
             <MudTextField Label="Remaining Item" @bind-Value="_newItem.RemainingItem" />
-            <InputFile OnChange="HandleFileUpload" Accept="image/*" />
+
+            <!-- Label for the Picture Input -->
+            <MudText Typo="Typo.body1" Class="mt-3">Picture</MudText>
+
+            <!-- Input file with margin-top styling -->
+            <InputFile OnChange="HandleFileUpload" Accept="image/*" class="input-file" />
+
             @if (!string.IsNullOrEmpty(_fileName))
             {
                 <MudText Typo="Typo.subtitle1">Uploaded File: @_fileName</MudText>
@@ -216,57 +222,33 @@
     }
 
 
+    private async Task<byte[]> ConvertFileToByteArrayAsync(IBrowserFile uploadedFile)
+    {
+        using (var memoryStream = new MemoryStream())
+        {
+            await uploadedFile.OpenReadStream().CopyToAsync(memoryStream);
+            return memoryStream.ToArray();
+        }
+    }
 
     private async Task SubmitNewItem()
 
     {
-        
-        // await _httpClient.PostAsJsonAsync("api/items", _newItem);
-
-        // await LoadItems();
-
-        // CloseAddItemDialog();
-
-        // Snackbar.Add("Item added successfully", Severity.Success);
-        if (_uploadedFile != null)
-        {
-            var content = new MultipartFormDataContent();
-
-            // Add item details
-            content.Add(new StringContent(_newItem.Name), "Name");
-            content.Add(new StringContent(_newItem.Description ?? string.Empty), "Description");
-            content.Add(new StringContent(_newItem.Price.ToString()), "Price");
-            content.Add(new StringContent(_newItem.Category!.Id.ToString()), "CategoryId");
-
-            // Copy the file stream into a memory stream to avoid consuming it more than once
-            using (var memoryStream = new MemoryStream())
-            {
-                await _uploadedFile.OpenReadStream().CopyToAsync(memoryStream);
-                memoryStream.Position = 0; // Reset stream position
-
-                // Add the file stream to the form data
-                var fileStreamContent = new StreamContent(memoryStream);
-                content.Add(fileStreamContent, "file", _fileName);
-
-                // Post to API
-                var response = await _httpClient.PostAsync("api/items", content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    await LoadItems();
-                    CloseAddItemDialog();
-                    Snackbar.Add("Item added successfully", Severity.Success);
-                }
-                else
-                {
-                    Snackbar.Add("Failed to add item", Severity.Error);
-                }
-            }
-        }
-        else
+        if (_uploadedFile == null)
         {
             Snackbar.Add("Please upload an image file", Severity.Warning);
+            return;
         }
+        byte[] fileBytes = await ConvertFileToByteArrayAsync(_uploadedFile);
+        _newItem.Picture = fileBytes;
+
+        await _httpClient.PostAsJsonAsync("api/items", _newItem);
+
+        await LoadItems();
+
+        CloseAddItemDialog();
+
+        Snackbar.Add("Item added successfully", Severity.Success);
     }
 
 
