@@ -15,7 +15,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IItemService, ItemService>();
-
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 //builder.Services.AddScoped<IItemService, FoodItemService>();
 builder.Services.AddHttpClient("ApiClient", options =>
 {

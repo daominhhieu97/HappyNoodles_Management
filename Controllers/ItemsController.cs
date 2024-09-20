@@ -32,6 +32,7 @@ namespace HappyNoodles_ManagementApp.Controllers
                 },
                 RemainingItem = item.RemainingItem,
                 Description = item.Description,
+                PictureUrl = item.PictureUrl
             }).ToList();
 
             return itemViewModels;
