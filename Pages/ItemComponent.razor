@@ -82,6 +82,12 @@
             {
                 <MudText Typo="Typo.subtitle1">Uploaded File: @_fileName</MudText>
             }
+
+            <!-- Image Preview -->
+            @if (!string.IsNullOrEmpty(_imagePreview))
+            {
+                <MudImage Src="@_imagePreview" Alt="Uploaded Image Preview" Class="mt-2" Width="200" Height="200" />
+            }
         </DialogContent>
         <DialogActions>
             <MudButton OnClick="SubmitNewItem">Save</MudButton>
@@ -103,6 +109,29 @@
                 }
             </MudSelect>
             <MudTextField Label="Remaining Item" @bind-Value="_editItem.RemainingItem" />
+            <MudText Typo="Typo.body1" Class="mt-3">Current Picture</MudText>
+            @if (!string.IsNullOrEmpty(_editItem.PictureUrl))
+            {
+                <!-- Display the Image -->
+                <MudImage Src="@_editItem.PictureUrl" Alt="Item Image" Width="200" Height="200" />
+            }
+
+            <!-- Label for the Picture Input -->
+            <MudText Typo="Typo.body1" Class="mt-3">New Picture?</MudText>
+
+            <!-- Input file with margin-top styling -->
+            <InputFile OnChange="HandleFileUpload" Accept="image/*" class="input-file" />
+
+            @if (!string.IsNullOrEmpty(_fileName))
+            {
+                <MudText Typo="Typo.subtitle1">Uploaded File: @_fileName</MudText>
+            }
+
+            <!-- Image Preview -->
+            @if (!string.IsNullOrEmpty(_imagePreview))
+            {
+                <MudImage Src="@_imagePreview" Alt="Uploaded Image Preview" Class="mt-2" Width="200" Height="200" />
+            }
         </DialogContent>
         <DialogActions>
             <MudButton OnClick="SubmitEditItem">Save</MudButton>
@@ -128,10 +157,9 @@
     private bool _isAddItemDialogOpen = false;
 
     private bool _isEditItemDialogOpen = false;
-    private IBrowserFile? _uploadedFile;
+    private IBrowserFile? _uploadedFileForPicture;
     private string _fileName = "";
-
-
+    private string? _imagePreview; 
 
     protected override async Task OnInitializedAsync()
 
@@ -145,19 +173,28 @@
 
     }
 
+    private async Task<string> GetImageBase64()
+    {
+        // Convert the uploaded file into a base64 string for image preview
+        var buffer = new byte[_uploadedFileForPicture!.Size];
+        await _uploadedFileForPicture.OpenReadStream().ReadAsync(buffer);
+        return $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}";        
+    }
+
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
-        _uploadedFile = e.File;
+        _uploadedFileForPicture = e.File;
 
         // Ensure only image files
-        if (_uploadedFile != null && _uploadedFile.ContentType.StartsWith("image/"))
+        if (_uploadedFileForPicture != null && _uploadedFileForPicture.ContentType.StartsWith("image/"))
         {
-            _fileName = _uploadedFile.Name;
+            _fileName = _uploadedFileForPicture.Name;
+            _imagePreview = await GetImageBase64();
         }
         else
         {
             Snackbar.Add("Please upload a valid image file.", Severity.Error);
-            _uploadedFile = null;
+            _uploadedFileForPicture = null;
         }
     }
 
@@ -219,6 +256,10 @@
 
         _newItem = new ItemViewModel(); // Reset form
 
+
+        _uploadedFileForPicture = null;
+        _fileName = string.Empty;
+        _imagePreview = null;
     }
 
 
@@ -234,12 +275,12 @@
     private async Task SubmitNewItem()
 
     {
-        if (_uploadedFile == null)
+        if (_uploadedFileForPicture == null)
         {
             Snackbar.Add("Please upload an image file", Severity.Warning);
             return;
         }
-        byte[] fileBytes = await ConvertFileToByteArrayAsync(_uploadedFile);
+        byte[] fileBytes = await ConvertFileToByteArrayAsync(_uploadedFileForPicture);
         _newItem.Picture = fileBytes;
 
         await _httpClient.PostAsJsonAsync("api/items", _newItem);
@@ -271,6 +312,7 @@
 
                 RemainingItem = item.RemainingItem,
                 Description = item.Description,
+                PictureUrl = item.PictureUrl
 
             };
 
@@ -283,9 +325,10 @@
     private void CloseEditItemDialog()
 
     {
-
         _isEditItemDialogOpen = false;
-
+        _uploadedFileForPicture = null;
+        _editItem = new ItemViewModel();
+        _fileName = string.Empty;
     }
 
 
@@ -293,7 +336,13 @@
     private async Task SubmitEditItem()
 
     {
-
+        if (_uploadedFileForPicture == null)
+        {
+            Snackbar.Add("Please upload an image file", Severity.Warning);
+            return;
+        }
+        byte[] fileBytes = await ConvertFileToByteArrayAsync(_uploadedFileForPicture);
+        _editItem.Picture = fileBytes;
         await _httpClient.PutAsJsonAsync($"api/items/{_editItem.Id}", _editItem);
 
         await LoadItems();

@@ -37,7 +37,8 @@ namespace HappyNoodles_ManagementApp.Services
                 },
                 RemainingItem = item.RemainingItem,
                 Description = item.Description,
-                
+                PictureUrl = item.PictureUrl
+
             }).ToList();
         }
 
@@ -59,7 +60,7 @@ namespace HappyNoodles_ManagementApp.Services
 
             var entity = await _context.Items.FirstOrDefaultAsync(x => x.Id == id);
 
-            if(entity == default)
+            if (entity == default)
             {
                 throw new Exception($"Cannot found the item {id}");
             }
@@ -76,6 +77,7 @@ namespace HappyNoodles_ManagementApp.Services
             var item = await _context.Items.FindAsync(id);
             if (item != null)
             {
+                await _blobStorageService.DeleteBlobAsync(item!.PictureUrl);
                 _context.Items.Remove(item);
                 await _context.SaveChangesAsync();
             }
@@ -91,6 +93,13 @@ namespace HappyNoodles_ManagementApp.Services
                 existingItem.CategoryId = model.Category!.Id!.Value;
                 existingItem.RemainingItem = model.RemainingItem;
                 existingItem.Description = model.Description;
+
+                var url = await _blobStorageService.UploadFileAsync(model.Picture, $"{Guid.NewGuid()}");
+
+                await _blobStorageService.DeleteBlobAsync(existingItem!.PictureUrl);
+
+                existingItem.PictureUrl = url;
+
                 await _context.SaveChangesAsync();
             }
         }
