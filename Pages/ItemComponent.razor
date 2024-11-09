@@ -275,13 +275,13 @@
     private async Task SubmitNewItem()
 
     {
-        if (_uploadedFileForPicture == null)
-        {
-            Snackbar.Add("Please upload an image file", Severity.Warning);
-            return;
-        }
-        byte[] fileBytes = await ConvertFileToByteArrayAsync(_uploadedFileForPicture);
-        _newItem.Picture = fileBytes;
+        // if (_uploadedFileForPicture == null)
+        // {
+        //     Snackbar.Add("Please upload an image file", Severity.Warning);
+        //     return;
+        // }
+        // byte[] fileBytes = await ConvertFileToByteArrayAsync(_uploadedFileForPicture);
+        // _newItem.Picture = fileBytes;
 
         await _httpClient.PostAsJsonAsync("api/items", _newItem);
 
@@ -336,13 +336,13 @@
     private async Task SubmitEditItem()
 
     {
-        if (_uploadedFileForPicture == null)
-        {
-            Snackbar.Add("Please upload an image file", Severity.Warning);
-            return;
-        }
-        byte[] fileBytes = await ConvertFileToByteArrayAsync(_uploadedFileForPicture);
-        _editItem.Picture = fileBytes;
+        // if (_uploadedFileForPicture == null)
+        // {
+        //     Snackbar.Add("Please upload an image file", Severity.Warning);
+        //     return;
+        // }
+        // byte[] fileBytes = await ConvertFileToByteArrayAsync(_uploadedFileForPicture);
+        // _editItem.Picture = fileBytes;
         await _httpClient.PutAsJsonAsync($"api/items/{_editItem.Id}", _editItem);
 
         await LoadItems();

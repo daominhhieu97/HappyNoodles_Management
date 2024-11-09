@@ -65,9 +65,13 @@ namespace HappyNoodles_ManagementApp.Services
                 throw new Exception($"Cannot found the item {id}");
             }
 
-            var url = await _blobStorageService.UploadFileAsync(model.Picture, $"{Guid.NewGuid()}");
+            if (model.Picture != null)
+            {
+                var url = await _blobStorageService.UploadFileAsync(model.Picture, $"{Guid.NewGuid()}");
 
-            entity.PictureUrl = url;
+                entity.PictureUrl = url;
+            }
+
 
             await _context.SaveChangesAsync();
         }
@@ -75,9 +79,14 @@ namespace HappyNoodles_ManagementApp.Services
         public async Task DeleteItemAsync(Guid id)
         {
             var item = await _context.Items.FindAsync(id);
+
             if (item != null)
             {
-                await _blobStorageService.DeleteBlobAsync(item!.PictureUrl);
+                if (item.PictureUrl != null)
+                {
+                    await _blobStorageService.DeleteBlobAsync(item!.PictureUrl);
+                }
+
                 _context.Items.Remove(item);
                 await _context.SaveChangesAsync();
             }
@@ -94,11 +103,15 @@ namespace HappyNoodles_ManagementApp.Services
                 existingItem.RemainingItem = model.RemainingItem;
                 existingItem.Description = model.Description;
 
-                var url = await _blobStorageService.UploadFileAsync(model.Picture, $"{Guid.NewGuid()}");
+                if (model.Picture != null)
+                {
+                    var url = await _blobStorageService.UploadFileAsync(model.Picture, $"{Guid.NewGuid()}");
 
-                await _blobStorageService.DeleteBlobAsync(existingItem!.PictureUrl);
+                    await _blobStorageService.DeleteBlobAsync(existingItem!.PictureUrl);
 
-                existingItem.PictureUrl = url;
+                    existingItem.PictureUrl = url;
+                }
+
 
                 await _context.SaveChangesAsync();
             }

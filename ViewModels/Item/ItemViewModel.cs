@@ -24,7 +24,7 @@ namespace HappyNoodles_ManagementApp.ViewModels.Item
         public int RemainingItem { get; set; } = 1;
         public CategoryViewModel? Category { get; set; } = new CategoryViewModel();
         public string? PictureUrl { get; set; }
-        public byte[] Picture { get; set; } // For the image file
+        public byte[]? Picture { get; set; } // For the image file
 
     }
 }
