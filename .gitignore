@@ -13,9 +13,5 @@ obj/
 # Ignore node modules
 node_modules/
 
-# Ignore .NET Core environment files
-appsettings.Development.json
-appsettings.Production.json
-
 # Ignore build results
 wwwroot/
